@@ -25,3 +25,7 @@ body {
 main {
   @apply min-h-screen flex justify-center py-8 md:py-20 px-4;
 }
+
+.result-item {
+  @apply w-full flex justify-between;
+}

@@ -12,25 +12,54 @@
         >
       </Transition>
       <!-- Timer -->
-      <div class="w-full h-8 bg-neutral-700 mt-10 rounded-lg overflow-hidden">
-        <Transition>
-          <div
-            class="h-full bg-emerald-600 transition-all"
-            :style="{
-              width: percentageTimer(),
-            }"
-            v-if="!isTimeout"
-          ></div>
-        </Transition>
-        <Transition>
-          <div
-            v-if="isTimeout"
-            class="h-full flex justify-center items-center text-emerald-400"
-          >
-            Time's up!
+      <Transition>
+        <div
+          v-if="!isFinished"
+          class="w-full h-8 bg-neutral-700 mt-10 rounded-lg overflow-hidden"
+        >
+          <Transition>
+            <div
+              class="h-full bg-emerald-600 transition-all"
+              :style="{
+                width: percentageTimer(),
+              }"
+              v-if="!isTimeout"
+            ></div>
+          </Transition>
+          <Transition>
+            <div
+              v-if="isTimeout"
+              class="h-full flex justify-center items-center text-emerald-400"
+            >
+              Time's up!
+            </div>
+          </Transition>
+        </div>
+      </Transition>
+      <!-- Results -->
+      <Transition>
+        <Card
+          v-if="isFinished"
+          class="mt-10 text-neutral-900 flex flex-col gap-2"
+        >
+          <div class="result-item">
+            <span>Number</span>
+            <span>{{ sessionInfo?.num }}</span>
           </div>
-        </Transition>
-      </div>
+          <div class="result-item">
+            <span>Your guess</span>
+            <span>{{ sessionInfo?.guess }}</span>
+          </div>
+          <div class="result-item">
+            <span>Distance to 24</span>
+            <span>{{ sessionInfo?.distance }}</span>
+          </div>
+          <div class="result-item">
+            <span>Time remaining</span>
+            <span>{{ sessionInfo?.remainingTime }}s</span>
+          </div>
+        </Card>
+      </Transition>
       <!-- Board -->
       <div class="mt-10 w-full max-w-2xl flex gap-5">
         <div class="flex-[2] grid grid-cols-2 gap-2 content-start">
@@ -61,21 +90,26 @@
       </div>
       <Transition>
         <Button
-          v-if="isExpValid && used.length === 4"
+          :onClick="submit"
+          v-if="isExpValid && used.length === 4 && !isTimeout && !isFinished"
           :disabled="isTimeout"
           primary
         >
           submit
         </Button>
       </Transition>
-      <Transition> </Transition>
+      <Transition>
+        <Button :onClick="playAgain" v-if="isTimeout || isFinished">
+          play again
+        </Button>
+      </Transition>
     </div>
   </main>
 </template>
 
 <script setup lang="ts">
 import { OPERATORS, TIME_TO_COMPLETE } from "~/constants";
-import { Num, Operator } from "~/types";
+import { Num, Operator, SessionInfo } from "~/types";
 
 useHead({
   title: "24",
@@ -89,6 +123,8 @@ useHead({
 
 const num = ref(8888);
 const used = ref<Num[]>([]);
+const isFinished = ref(false);
+const sessionInfo = ref<SessionInfo>();
 const isTimeout = ref(false);
 const remainingTime = ref(TIME_TO_COMPLETE);
 const intervalTimeout = ref<NodeJS.Timer>();
@@ -178,6 +214,20 @@ function percentageTimer() {
   )}%`;
 }
 
+function submit() {
+  sessionInfo.value = {
+    num: num.value,
+    guess: expDisplay.value,
+    distance: Math.abs(24 - parseInt(result.value)),
+    remainingTime: remainingTime.value,
+  };
+  isFinished.value = true;
+}
+
+function playAgain() {
+  location.reload();
+}
+
 // so we can track which number is clicked, if there are identical numbers
 const numDecon = computed<Num[]>(() => {
   return num.value
@@ -195,12 +245,12 @@ const result = computed<string>(() => {
   try {
     return Number(eval(exp.value)).toFixed(1).toString();
   } catch (err) {
-    return "-";
+    return "0";
   }
 });
 
 const isExpValid = computed<boolean>(() => {
-  if (result.value !== "-") return true;
+  if (result.value !== "0") return true;
   return false;
 });
 </script>
