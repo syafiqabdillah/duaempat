@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* we will explain what these classes do next! */
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+
+a {
+  cursor: pointer;
+}
+
+body {
+  @apply bg-neutral-800;
+  @apply text-gray-200;
+}
+
+main {
+  @apply min-h-screen flex justify-center py-8 md:py-20 px-4;
+}
